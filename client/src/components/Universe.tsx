@@ -26,12 +26,12 @@ export default function Universe() {
 
   useEffect(() => {
     const generatedStars: Star[] = [];
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 400; i++) {
       generatedStars.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.8 + 0.2,
+        size: Math.random() * 1.5 + 0.3,
+        opacity: Math.random() * 0.3 + 0.1,
       });
     }
     setStars(generatedStars);
@@ -66,7 +66,7 @@ export default function Universe() {
         ctx.fill();
       });
 
-      if (pathResult && selectedPlanet) {
+      if (pathResult) {
         pathResult.edges.forEach((edge) => {
           const planet1 = allPlanets[edge.from - 1];
           const planet2 = allPlanets[edge.to - 1];
@@ -79,12 +79,20 @@ export default function Universe() {
           const x2 = centerX + Math.cos(angle2) * planet2.orbitRadius;
           const y2 = centerY + Math.sin(angle2) * planet2.orbitRadius;
           
-          ctx.strokeStyle = "rgba(255, 215, 0, 0.3)";
+          ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
           ctx.stroke();
+
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          ctx.fillStyle = "rgba(255, 215, 0, 0.9)";
+          ctx.font = "bold 12px Montserrat, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(edge.weight.toString(), midX, midY);
         });
       }
 
@@ -116,13 +124,11 @@ export default function Universe() {
         const x = centerX + Math.cos(newAngle) * planet.orbitRadius;
         const y = centerY + Math.sin(newAngle) * planet.orbitRadius;
 
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
         ctx.lineWidth = 1;
-        ctx.setLineDash([5, 5]);
         ctx.beginPath();
         ctx.arc(centerX, centerY, planet.orbitRadius, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.setLineDash([]);
 
         const planetGradient = ctx.createRadialGradient(
           x - planet.size / 3,
@@ -133,12 +139,13 @@ export default function Universe() {
           planet.size
         );
         
-        const lighterColor = adjustColorBrightness(planet.color, 40);
+        const lighterColor = adjustColorBrightness(planet.color, 30);
+        const darkerColor = adjustColorBrightness(planet.color, -20);
         planetGradient.addColorStop(0, lighterColor);
-        planetGradient.addColorStop(0.6, planet.color);
-        planetGradient.addColorStop(1, adjustColorBrightness(planet.color, -30));
+        planetGradient.addColorStop(0.7, planet.color);
+        planetGradient.addColorStop(1, darkerColor);
 
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = planet.color;
         ctx.fillStyle = planetGradient;
         ctx.beginPath();
@@ -146,11 +153,33 @@ export default function Universe() {
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        ctx.fillStyle = "#000000";
-        ctx.font = "bold 11px Montserrat, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(planetNumber.toString(), x, y);
+        if (planet.feature === "rings") {
+          ctx.strokeStyle = adjustColorBrightness(planet.color, -30);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(x, y, planet.size * 1.5, planet.size * 0.5, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (planet.feature === "spots") {
+          ctx.fillStyle = adjustColorBrightness(planet.color, -40);
+          for (let i = 0; i < 3; i++) {
+            const spotX = x + (Math.cos(i * 2) * planet.size * 0.5);
+            const spotY = y + (Math.sin(i * 2) * planet.size * 0.5);
+            ctx.beginPath();
+            ctx.arc(spotX, spotY, planet.size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (planet.feature === "asteroids") {
+          ctx.fillStyle = adjustColorBrightness(planet.color, -30);
+          for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2 + newAngle * 2;
+            const distance = planet.size * 1.8;
+            const asteroidX = x + Math.cos(angle) * distance;
+            const asteroidY = y + Math.sin(angle) * distance;
+            ctx.beginPath();
+            ctx.arc(asteroidX, asteroidY, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
       });
 
       animationRef.current = requestAnimationFrame(animate);
@@ -164,7 +193,7 @@ export default function Universe() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [createdPlanets, stars, pathResult, selectedPlanet]);
+  }, [createdPlanets, stars, pathResult]);
 
   function adjustColorBrightness(hex: string, percent: number): string {
     const num = parseInt(hex.replace("#", ""), 16);
@@ -228,13 +257,16 @@ export default function Universe() {
 
       <button
         onClick={() => setLocation("/")}
-        className="absolute top-6 left-6 z-20 bg-white/10 hover:bg-white/20 backdrop-blur-sm p-3 rounded-full transition-colors"
+        className="absolute top-6 left-6 z-20 bg-[#F4EFD3]/20 hover:bg-[#F4EFD3]/30 backdrop-blur-sm p-3 rounded-full transition-colors border-2 border-white/30"
         data-testid="button-home"
       >
         <Home className="w-6 h-6 text-white" />
       </button>
 
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 text-center">
+        <h2 className="font-script text-4xl text-white mb-4 pointer-events-none" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+          THE COSMIC BALANCE LIES IN YOUR HANDS
+        </h2>
         <form onSubmit={handleInputSubmit} className="pointer-events-auto">
           <input
             type="number"
@@ -242,8 +274,8 @@ export default function Universe() {
             max="100"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Enter 1-100"
-            className="w-[200px] bg-transparent text-white placeholder:text-white/50 text-center text-lg font-['Montserrat'] focus:outline-none focus:ring-2 focus:ring-white/30 rounded-lg px-4 py-2"
+            placeholder="ENTER A NUMBER"
+            className="w-[280px] bg-transparent text-white placeholder:text-white/60 text-center text-xl font-bold tracking-wide focus:outline-none focus:ring-0 border-b-2 border-white/40 focus:border-white/80 pb-2 transition-colors"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
             data-testid="input-planet-number"
           />
