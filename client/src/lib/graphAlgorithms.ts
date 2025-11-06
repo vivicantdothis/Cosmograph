@@ -33,11 +33,7 @@ export function calculateShortestPaths(
   distances.set(sourceNumber, 0);
   
   function getEdgeWeight(a: number, b: number): number {
-    const diff = Math.abs(a - b);
-    const gcd = calculateGCD(a, b);
-    const lcm = (a * b) / gcd;
-    
-    return diff + (gcd / 10) + (lcm / 1000);
+    return Math.abs(a - b);
   }
   
   function calculateGCD(a: number, b: number): number {
