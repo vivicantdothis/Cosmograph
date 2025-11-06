@@ -89,7 +89,7 @@ export default function Universe() {
           const midX = (x1 + x2) / 2;
           const midY = (y1 + y2) / 2;
           ctx.fillStyle = "rgba(255, 215, 0, 0.9)";
-          ctx.font = "bold 12px Montserrat, sans-serif";
+          ctx.font = "12px Unbounded, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(edge.weight.toString(), midX, midY);
@@ -247,7 +247,7 @@ export default function Universe() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    <div className="relative w-full h-screen overflow-hidden bg-black" style={{ fontFamily: 'Unbounded, sans-serif' }}>
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
@@ -257,7 +257,7 @@ export default function Universe() {
 
       <button
         onClick={() => setLocation("/")}
-        className="absolute top-6 left-6 z-20 bg-[#F4EFD3]/20 hover:bg-[#F4EFD3]/30 backdrop-blur-sm p-3 rounded-full transition-colors border-2 border-white/30"
+        className="absolute top-6 left-6 z-20 bg-[#F4EFD3]/20 hover:bg-[#F4EFD3]/30 backdrop-blur-sm p-3 rounded-full transition-colors border border-white/20"
         data-testid="button-home"
       >
         <Home className="w-6 h-6 text-white" />
@@ -275,8 +275,7 @@ export default function Universe() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="ENTER A NUMBER"
-            className="w-[280px] bg-transparent text-white placeholder:text-white/60 text-center text-xl font-bold tracking-wide focus:outline-none focus:ring-0 border-b-2 border-white/40 focus:border-white/80 pb-2 transition-colors"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
+            className="w-[280px] bg-transparent text-white placeholder:text-white/60 text-center text-lg tracking-wide focus:outline-none focus:ring-0 border-b-2 border-white/40 focus:border-white/80 pb-2 transition-colors"
             data-testid="input-planet-number"
           />
         </form>
