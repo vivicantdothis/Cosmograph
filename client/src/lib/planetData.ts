@@ -1,15 +1,21 @@
 import type { Planet } from "@shared/schema";
 
 const colors = [
-  "#B8C5B0",
-  "#D4A5A5",
-  "#C7B8E6",
-  "#E0C992",
-  "#A8C5D6",
-  "#C9B5A0",
-  "#B5D4C8",
-  "#E6C8B8",
+  "#FF6B9D", "#FFB5E8", "#B4E7CE", "#A7C7E7", "#E7C6FF", "#FFE5B4",
+  "#C1FFC1", "#FFB3BA", "#BAFFC9", "#BAE1FF", "#FFFFBA", "#FFDFBA",
+  "#E0BBE4", "#D4F1F4", "#B5EAD7", "#C7CEEA", "#FFDFD3", "#F0E68C",
+  "#DDA0DD", "#F0E6FF", "#FFE4E1", "#E6E6FA", "#F0FFF0", "#FFF0F5",
+  "#98D8C8", "#F7CAC9", "#92A8D1", "#F4C2C2", "#B2E0E0", "#D5AAFF",
+  "#FFB6C1", "#AFEEEE", "#DEB887", "#F5DEB3", "#D8BFD8", "#FFE4B5",
+  "#E0E0E0", "#FFE4C4", "#F5F5DC", "#FAEBD7", "#FFE5CC", "#FFDAB9"
 ];
+
+type PlanetFeature = "rings" | "asteroids" | "spots" | "none";
+
+function getRandomFeature(seed: number): PlanetFeature {
+  const features: PlanetFeature[] = ["rings", "asteroids", "spots", "none"];
+  return features[seed % 4];
+}
 
 function getPrimeFactors(n: number): number[] {
   const factors: number[] = [];
@@ -73,89 +79,57 @@ const descriptions = [
 const explorerNames = [
   "Esker", "Riebeck", "Chert", "Feldspar", "Gabbro",
   "Captain Vela", "Navigator Orion", "Scout Lyra", "Pioneer Andromeda",
-  "Traveler Cassiopeia", "Wanderer Phoenix", "Seeker Draco", "Voyager Cygnus",
-  "Explorer Aquila", "Ranger Perseus", "Surveyor Centaurus", "Pilot Vega",
-  "Observer Sirius", "Cartographer Polaris", "Pathfinder Altair",
+  "Commander Cassini", "Explorer Kepler", "Astronomer Galileo", 
+  "Voyager Hubble", "Surveyor Sagan", "Observer Hawking"
 ];
 
 const quoteTemplates = [
-  "said to be like \"${metaphor}\" by wayward explorer ${name}",
-  "described as \"${metaphor}\" by the daring ${name}",
-  "called \"${metaphor}\" by intrepid traveler ${name}",
-  "known as \"${metaphor}\" according to ${name}",
-  "reminiscent of \"${metaphor}\" per explorer ${name}",
+  "The cosmic winds here whisper ancient secrets.",
+  "I've never seen such breathtaking stellar formations.",
+  "This world defies all conventional understanding.",
+  "The numerical patterns here are extraordinary.",
+  "A truly remarkable discovery in the void.",
+  "The balance of forces here is mesmerizing.",
+  "I could study this celestial body for lifetimes.",
+  "The mathematical harmony is beyond description.",
+  "This planet holds keys to universal mysteries.",
+  "A testament to the beauty of cosmic order.",
 ];
 
-const metaphors = [
-  "a tsunami wave amidst the stars",
-  "a jewel in the cosmic crown",
-  "nature's gentle whisper in the void",
-  "a lighthouse in the celestial sea",
-  "a symphony frozen in time",
-  "the universe's secret garden",
-  "a tempest caught in amber",
-  "a dance of light and shadow",
-  "the cosmos's forgotten dream",
-  "a pearl in the stellar oyster",
-  "infinity's quiet contemplation",
-  "stardust crystallized into wonder",
-  "the void's colorful rebellion",
-  "a story written in geology",
-  "time's patient sculpture",
-  "chaos wearing harmony's mask",
-  "the galaxy's hidden treasure",
-  "serenity amid the stellar winds",
-  "a paradox of beauty and danger",
-  "the universe painting with atmosphere",
-];
+function generatePlanet(number: number): Planet {
+  const baseRadius = 150;
+  const radiusIncrement = 35;
+  const orbitRadius = baseRadius + (number % 10) * radiusIncrement;
+  
+  const size = 15 + (number % 7) * 3;
+  const color = colors[(number - 1) % colors.length];
+  const feature = getRandomFeature(number);
+  
+  const description = descriptions[(number - 1) % descriptions.length];
+  const explorerName = explorerNames[(number - 1) % explorerNames.length];
+  const quote = quoteTemplates[(number - 1) % quoteTemplates.length];
+  
+  const orbitSpeed = 100 + (number % 5) * 20;
 
-export function generatePlanetData(): Planet[] {
-  const planets: Planet[] = [];
-  
-  for (let i = 1; i <= 100; i++) {
-    const primeFactors = getPrimeFactors(i);
-    const prime = isPrime(i);
-    const digitSum = getDigitSum(i);
-    
-    const baseSize = 20 + (i % 30);
-    const size = prime ? baseSize + 8 : baseSize;
-    
-    const orbitRadius = 150 + (i * 8) + (Math.sin(i) * 30);
-    const orbitSpeed = 15 + (i / 10) + (Math.random() * 10);
-    
-    const color = colors[i % colors.length];
-    
-    const descIndex = (i * 7) % descriptions.length;
-    const explorerIndex = (i * 3) % explorerNames.length;
-    const quoteIndex = (i * 5) % quoteTemplates.length;
-    const metaphorIndex = (i * 11) % metaphors.length;
-    
-    const explorerName = explorerNames[explorerIndex];
-    const quote = quoteTemplates[quoteIndex]
-      .replace("${metaphor}", metaphors[metaphorIndex])
-      .replace("${name}", explorerName);
-    
-    planets.push({
-      number: i,
-      name: `P-${i}`,
-      size,
-      color,
-      orbitRadius,
-      orbitSpeed,
-      description: descriptions[descIndex],
-      explorerQuote: quote,
-      explorerName,
-      properties: {
-        primeFactors,
-        isPrime: prime,
-        isEven: i % 2 === 0,
-        digitSum,
-        category: getCategory(i),
-      },
-    });
-  }
-  
-  return planets;
+  return {
+    number,
+    color,
+    size,
+    orbitRadius,
+    orbitSpeed,
+    description,
+    explorerQuote: `"${quote}" - ${explorerName}`,
+    feature,
+    properties: {
+      isPrime: isPrime(number),
+      isEven: number % 2 === 0,
+      digitSum: getDigitSum(number),
+      primeFactors: getPrimeFactors(number),
+      category: getCategory(number),
+    },
+  };
 }
 
-export const allPlanets = generatePlanetData();
+export const allPlanets: Planet[] = Array.from({ length: 100 }, (_, i) => 
+  generatePlanet(i + 1)
+);

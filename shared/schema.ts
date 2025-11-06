@@ -2,14 +2,15 @@ import { z } from "zod";
 
 export const planetSchema = z.object({
   number: z.number().min(1).max(100),
-  name: z.string(),
+  name: z.string().optional(),
   size: z.number(),
   color: z.string(),
   orbitRadius: z.number(),
   orbitSpeed: z.number(),
   description: z.string(),
   explorerQuote: z.string(),
-  explorerName: z.string(),
+  explorerName: z.string().optional(),
+  feature: z.enum(["rings", "asteroids", "spots", "none"]),
   properties: z.object({
     primeFactors: z.array(z.number()),
     isPrime: z.boolean(),
