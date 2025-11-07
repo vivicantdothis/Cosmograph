@@ -1,82 +1,136 @@
-import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import cosmicImage from "@assets/image_1762457883939.png";
+import { useEffect, useRef, useState } from "react";
+
+interface Sprite {
+  x: number;
+  y: number;
+  size: number;
+  speed: number;
+  color: string;
+}
+
+const thoughtImages = ["/thought1.png", "/thought2.png", "/thought3.png"];
 
 export default function Landing() {
   const [, setLocation] = useLocation();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [sprites, setSprites] = useState<Sprite[]>([]);
+  const [astroY, setAstroY] = useState(0);
+  const [astroDir, setAstroDir] = useState(1);
+  const [thoughtIndex, setThoughtIndex] = useState(0);
+
+  // Initialize background sprites
+  useEffect(() => {
+    const colors = ["#FFED99", "#FFF2B2", "#FFE4B5", "#FFDDAA"];
+    const newSprites: Sprite[] = [];
+    for (let i = 0; i < 120; i++) {
+      newSprites.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 3 + 1,
+        speed: Math.random() * 0.2 + 0.05,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+    setSprites(newSprites);
+  }, []);
+
+  // Animate background sprites
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const animate = () => {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      sprites.forEach((sprite) => {
+        sprite.y += sprite.speed;
+        if (sprite.y > canvas.height) sprite.y = -sprite.size;
+
+        ctx.fillStyle = sprite.color;
+        ctx.fillRect(sprite.x, sprite.y, sprite.size, sprite.size);
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, [sprites]);
+
+  // Animate bouncing astronaut & cycle thought images faster
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAstroY((prev) => {
+        if (prev >= 20) setAstroDir(-1);
+        if (prev <= 0) setAstroDir(1);
+        return prev + astroDir;
+      });
+    }, 50);
+
+    const thoughtInterval = setInterval(() => {
+      setThoughtIndex((prev) => (prev + 1) % thoughtImages.length);
+    }, 2000); // faster cycle (every 2 seconds)
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(thoughtInterval);
+    };
+  }, [astroDir]);
 
   return (
-    <div className="min-h-screen bg-[#6B9BD1]" style={{ fontFamily: 'Unbounded, sans-serif' }}>
-      <div className="max-w-6xl mx-auto">
-        <header className="bg-[#7D8C5E] py-3 px-8 flex items-center justify-between border-b-2 border-black/20">
-          <div className="bg-[#F4EFD3] rounded-full px-6 py-3 border border-black/10">
-            <h1 className="font-script text-3xl text-[#7D8C5E]">Cosmograph</h1>
-          </div>
-          
-          <Button
-            onClick={() => setLocation("/universe")}
-            className="bg-[#F4EFD3] text-[#7D8C5E] hover:bg-[#E8E2C6] rounded-full px-6 border border-black/10"
-            data-testid="button-enter-universe-header"
-          >
-            ENTER THE UNIVERSE
-          </Button>
-        </header>
+    <div className="w-screen h-screen relative bg-black overflow-hidden flex flex-col items-center justify-center">
+      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
 
-        <div className="bg-white/90 backdrop-blur-sm border-2 border-black/10">
-          <div className="grid md:grid-cols-2 gap-0">
-            <div className="relative bg-[#F4EFD3] p-8 border-r border-black/10" style={{
-              backgroundImage: `repeating-linear-gradient(0deg, #6B9BD1 0px, #6B9BD1 20px, transparent 20px, transparent 40px)`,
-              backgroundBlendMode: 'overlay',
-              backgroundSize: '100% 100%',
-            }}>
-              <div className="relative">
-                <img
-                  src={cosmicImage}
-                  alt="Cosmic Universe"
-                  className="w-full h-[400px] object-cover rounded-lg shadow-lg"
-                  data-testid="img-cosmic-graphic"
-                />
-                <div className="absolute bottom-4 right-4 bg-white/95 rounded-full p-3 border border-[#C85A54]/30 shadow-lg">
-                  <p className="text-xs text-[#C85A54] text-center leading-tight">
-                    100% LOCAL<br/>GALAXIES
-                  </p>
-                </div>
-              </div>
-            </div>
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Logo with reduced overlap */}
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="w-64 md:w-80 z-10" // slightly less overlap
+          style={{ position: "relative", top: "20px"}}
+        />
 
-            <div className="bg-[#F4EFD3] p-8 flex flex-col justify-center">
-              <h2 className="font-serif italic text-4xl text-[#C85A54] mb-4 leading-tight">
-                The Largest<br/>
-                Cosmically Discovered<br/>
-                Number Galaxy<br/>
-                on the East Coast
-              </h2>
-              
-              <div className="mb-6">
-                <p className="uppercase text-[#7D8C5E] text-sm mb-3 tracking-wide">
-                  WELCOME TO THE CENTER OF THE COSMOGRAPH
-                </p>
-                <p className="text-gray-700 leading-relaxed">
-                  Cosmograph brings together data structures, algorithms, and the fragility of the cosmic balance all in one tiny segment of the universe. Come enter a number and explore how planets correlate to one another.
-                </p>
-              </div>
+        {/* Astronaut bouncing sprite with thought bubble */}
+        <div className="flex flex-col items-center space-y-1">
+          <img
+            src="/astronaut_pixel.png"
+            alt="Astronaut"
+            className="w-32 md:w-40"
+            style={{ transform: `translateY(${astroY}px)` }}
+          />
 
-              <Button
-                onClick={() => setLocation("/universe")}
-                className="bg-[#6B9BD1] text-white hover:bg-[#5A8BC0] rounded-full px-8 py-5 border border-black/10 shadow-lg"
-                data-testid="button-enter-universe-main"
-              >
-                ENTER THE UNIVERSE
-              </Button>
-            </div>
-          </div>
-
-          <div className="bg-[#C85A54] text-white py-3 text-center border-t border-black/10">
-            <p className="text-sm uppercase tracking-wider">
-              Owned & Operated by a Committee of Local Galaxy Explorers and Telescope Owners
-            </p>
-          </div>
+          <img
+            src={thoughtImages[thoughtIndex]}
+            alt="Thought bubble"
+            className="w-48 md:w-56"
+          />
         </div>
+
+        {/* Text overlapping the thought bubble */}
+        <img
+          src="/text.png"
+          alt="Landing Text"
+          className="w-96 md:w-[700px] -mt-6 mb-2 z-10"
+        />
+
+        {/* Enter Universe Button overlapping text */}
+        <img
+          src="/button.png"
+          alt="Enter Universe Button"
+          className="w-48 md:w-60 -mt-4 z-10 cursor-pointer"
+          onClick={() => setLocation("/universe")}
+        />
       </div>
     </div>
   );
