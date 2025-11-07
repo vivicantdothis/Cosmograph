@@ -71,10 +71,9 @@ app.use((req, res, next) => {
 
     // ✅ SAFER DEFAULTS FOR WINDOWS + NODE 20+
     const port = parseInt(process.env.PORT || "5000", 10);
-    const host = process.env.HOST || "localhost"; // instead of "0.0.0.0"
-
+    const host = "0.0.0.0";
     server.listen(port, host, () => {
-      log(`🚀 Server running at http://${host}:${port}`);
+      log(`🚀 Server running at http://0.0.0.0:${port}`);
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err);
